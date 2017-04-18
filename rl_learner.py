@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from learners.base import BaseLearner
+
 import numpy as np
 import chainer
 import chainer.links as L
@@ -85,3 +86,31 @@ class RLLearner(BaseLearner):
             q_j = self.q_function(phi_j)
             t = (self.xp.arange(0, q_j.data.shape[1])[None, :] == a_j[:, None])
             loss = F.sum((y - F.sum(q_j*t, axis=1))**2)/ minibatch_size
+
+                def select_random_action(self):
+        return self.xp.random.randint(0, self.action_count)
+    
+    def select_optimal_action(self, phi):
+        x = self.xp.asarray([phi], dtype='int32')
+        return self.xp.argmax(self.q_function(x).data)
+
+    def reward(self, reward):
+        self.latest_reward = reward
+
+    def next(self, s):
+        phi = ord(s)
+        if not self.latest_reward is None:
+            self.push_memory([self.latest_phi, self.latest_action, self.latest_reward, phi])
+        self.update_with_minibatch()
+        if self.mode_count >= 5000:
+            self.mode_count = 0
+            self.exploler = not self.exploler
+        self.mode_count += 1
+        if self.exploler and (self.xp.random.uniform(0, 1.0) <= self.initial_eps) :
+            a = self.select_random_action()
+        else:
+            a = self.select_optimal_action(phi)
+        self.latest_phi = phi
+        self.latest_action = a
+        print(a, self.exploler)
+        return chr(a)
