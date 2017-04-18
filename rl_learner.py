@@ -87,7 +87,7 @@ class RLLearner(BaseLearner):
             t = (self.xp.arange(0, q_j.data.shape[1])[None, :] == a_j[:, None])
             loss = F.sum((y - F.sum(q_j*t, axis=1))**2)/ minibatch_size
 
-                def select_random_action(self):
+    def select_random_action(self):
         return self.xp.random.randint(0, self.action_count)
     
     def select_optimal_action(self, phi):
