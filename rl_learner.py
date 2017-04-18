@@ -59,7 +59,7 @@ class RLLearner(BaseLearner):
         self.latest_reward = None
         self.gamma = gamma
         self.mode_count = 0
-        self.exploler = True
+        self.exploration = True
     
     def push_memory(self, x):
         if len(self.replay_memory) >= self.replay_memory_size:
@@ -104,13 +104,13 @@ class RLLearner(BaseLearner):
         self.update_with_minibatch()
         if self.mode_count >= 5000:
             self.mode_count = 0
-            self.exploler = not self.exploler
+            self.exploration = not self.exploration
         self.mode_count += 1
-        if self.exploler and (self.xp.random.uniform(0, 1.0) <= self.initial_eps) :
+        if self.exploration and (self.xp.random.uniform(0, 1.0) <= self.initial_eps) :
             a = self.select_random_action()
         else:
             a = self.select_optimal_action(phi)
         self.latest_phi = phi
         self.latest_action = a
-        print(a, self.exploler)
+        print(a, self.exploration)
         return chr(a)
