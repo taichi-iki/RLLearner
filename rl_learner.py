@@ -15,6 +15,9 @@ from chainer import Variable
 from chainer import optimizers
 
 class QFunction(chainer.Chain):
+    #
+    # [?] how to give context to network
+    #
     def __init__(
             self,
             input_dim=256,
@@ -100,13 +103,20 @@ class RLLearner(BaseLearner):
     def next(self, s):
         phi = ord(s)
         if not self.latest_reward is None:
+            #
+            # [?] What is an enought content of memory segments to solve tasks
+            #
             self.push_memory([self.latest_phi, self.latest_action, self.latest_reward, phi])
         self.update_with_minibatch()
+        #
+        # [?] How to keep balance between value exploration and task evaluation
+        #
         if self.mode_count >= 5000:
             self.mode_count = 0
             self.exploration = not self.exploration
         self.mode_count += 1
-        if self.exploration and (self.xp.random.uniform(0, 1.0) <= self.initial_eps) :
+        # if self.xp.random.uniform(0, 1.0) <= self.initial_eps:
+        if self.exploration and (self.xp.random.uniform(0, 1.0) <= self.initial_eps):
             a = self.select_random_action()
         else:
             a = self.select_optimal_action(phi)
